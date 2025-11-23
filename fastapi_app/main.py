@@ -4,11 +4,17 @@ from typing import List
 import pandas as pd
 import mlflow
 from database import init_db, log_to_db, jobs_table, engine
+from sklearn.datasets import load_iris
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 
 app = FastAPI()
 mlflow.set_tracking_uri("http://localhost:5000")
+mlflow.autolog()
 MODEL_URI = "models:/N2N/1"
 model = mlflow.pyfunc.load_model(MODEL_URI)
+init_db()
 
 # Example request model
 class PredInputs(RootModel[dict]):
@@ -17,6 +23,26 @@ class PredInputs(RootModel[dict]):
 class JobSubmission(BaseModel):
     iterations: int = Field(ge=1, le=3)
     input:int = Field(ge=1, le=100)
+
+@app.get("/training")
+def train():
+    try:
+        mlflow.set_experiment('n2n')
+        X, y = load_iris(return_X_y=True)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+        with mlflow.start_run() as run:
+            clf = RandomForestClassifier()
+            clf.fit(X_train, y_train)
+            
+            y_pred = clf.predict(X_test)
+            acc = accuracy_score(y_test, y_pred)
+            print(f"Test Accuracy: {acc}")
+
+        mlflow.register_model(f"runs:/{run.info.run_id}/model", "N2N")
+        return {"run_id": run.info.run_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/predict")
 def predict(records: List[PredInputs]):

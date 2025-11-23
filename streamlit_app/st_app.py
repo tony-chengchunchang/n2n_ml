@@ -2,7 +2,16 @@ import streamlit as st
 import pandas as pd
 import requests
 
-st.title("Upload CSV and Get Predictions")
+st.title("ML Operations Demo")
+
+st.header("Train Model")
+if st.button("Start Training"):
+    response = requests.get("http://localhost:8000/training")
+    if response.status_code == 200:
+        run_info = response.json()
+        st.success(f"Training finished! Run ID: {run_info['run_id']}")
+    else:
+        st.error(f"Error: {response.status_code} - {response.text}")
 
 st.header("Inference")
 uploaded_file = st.file_uploader("Choose a CSV file", type=["csv"])

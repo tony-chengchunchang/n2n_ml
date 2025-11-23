@@ -16,6 +16,7 @@ while True:
             time.sleep(1)
             continue
     try:
+        print(f"Processing job {job_id} with input {res[1]}")
         run_job(res[1])
         with engine.begin() as conn:
             conn.execute(text(f"update jobs set status='success' where id={job_id}"))
