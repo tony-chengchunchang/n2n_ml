@@ -1,12 +1,15 @@
+import os
 import streamlit as st
 import pandas as pd
 import requests
 
 st.title("ML Operations Demo")
 
+FASTAPI_SERVER_URL = os.getenv("FASTAPI_SERVER_URL", "http://localhost:8000")
+
 st.header("Train Model")
 if st.button("Start Training"):
-    response = requests.get("http://localhost:8000/training")
+    response = requests.get(f"{FASTAPI_SERVER_URL}/training")
     if response.status_code == 200:
         run_info = response.json()
         st.success(f"Training finished! Run ID: {run_info['run_id']}")
@@ -26,7 +29,7 @@ if uploaded_file is not None:
     if st.button("Get Predictions"):
         # Convert dataframe to JSON
         payload = df.to_dict(orient="records")
-        response = requests.post("http://localhost:8000/predict", json=payload)
+        response = requests.post(f"{FASTAPI_SERVER_URL}/predict", json=payload)
 
         if response.status_code == 200:
             predictions = response.json()
@@ -39,7 +42,7 @@ st.header("Submit Jobs")
 iters = st.number_input("Iterations?", min_value=1, value=1)
 input_val = st.number_input("Input value?", min_value=1, max_value=100, value=10)
 if st.button("Submit"):
-    response = requests.post("http://localhost:8000/submit_jobs", json={"iterations": iters, "input": input_val})
+    response = requests.post(f"{FASTAPI_SERVER_URL}/submit_jobs", json={"iterations": iters, "input": input_val})
     if response.status_code == 200:
         job_ids = response.json().get("job_ids", [])
         st.write("Submitted Job IDs:")
@@ -50,7 +53,7 @@ if st.button("Submit"):
 st.header("Check jobs")
 job_id = st.text_input("Enter Job ID to check status")
 if st.button("Check Job Status"):
-    response = requests.get(f"http://localhost:8000/job_status/{job_id}")
+    response = requests.get(f"{FASTAPI_SERVER_URL}/job_status/{job_id}")
     if response.status_code == 200:
         status = response.json()
         st.write("Job Status:")

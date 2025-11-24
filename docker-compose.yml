@@ -1,0 +1,42 @@
+version: '3.9'
+services:
+  mlflow_server:
+    build:
+      context: .
+      dockerfile: ./mlflow_server/Dockerfile
+    container_name: mlflow_server
+    volumes:
+      - ./mlflow_data/:/app/mlflow_data/
+    ports:
+      - "5000:5000"
+    
+  fastapi:
+    build:
+      context: .
+      dockerfile: ./fastapi_app/Dockerfile
+    container_name: fastapi
+    depends_on:
+      - mlflow_server
+    volumes:
+      - ./job_data/:/app/job_data/
+    ports:
+      - "8000:8000"
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: ./streamlit_app/Dockerfile
+    container_name: streamlit
+    depends_on:
+      - fastapi
+    ports:
+      - "8501:8501"
+
+  worker:
+    build:
+      context: .
+      dockerfile: ./worker_app/Dockerfile
+    depends_on:
+      - fastapi
+    volumes:
+      - ./job_data/:/app/job_data/

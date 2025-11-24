@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, MetaData, Integer, String, Table, Column
 
-DB_PATH = 'job.db'
+DB_PATH = 'job_data/job.db'
 engine = create_engine(f'sqlite:///{DB_PATH}')
 metadata = MetaData()
 

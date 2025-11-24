@@ -1,5 +1,5 @@
 __pycache__/
 inputs.csv
 test.ipynb
-mlflow/
+mlflow_data/
 job.db

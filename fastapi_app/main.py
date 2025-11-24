@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, RootModel, Field
 from typing import List
@@ -10,7 +11,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 
 app = FastAPI()
-mlflow.set_tracking_uri("http://localhost:5000")
+tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
+mlflow.set_tracking_uri(tracking_uri)
 mlflow.autolog()
 MODEL_URI = "models:/N2N/1"
 model = mlflow.pyfunc.load_model(MODEL_URI)
